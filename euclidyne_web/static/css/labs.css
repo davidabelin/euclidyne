@@ -1,0 +1,61 @@
+.card-grid,
+.two-up,
+.lab-grid {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.two-up,
+.lab-grid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.stepper {
+  margin-top: 0.95rem;
+}
+
+.stepper input[type="range"] {
+  width: 100%;
+}
+
+.svg-shell {
+  margin-top: 0.95rem;
+  min-height: 320px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(242, 236, 226, 0.88));
+  overflow: hidden;
+}
+
+.svg-shell.tall {
+  min-height: 420px;
+}
+
+.svg-shell svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.table-panel h2 {
+  margin-top: 0;
+}
+
+.hero {
+  padding: clamp(1.1rem, 3vw, 1.6rem);
+}
+
+.card {
+  padding: 1rem;
+}
+
+@media (max-width: 760px) {
+  .page {
+    width: min(96vw, 1180px);
+  }
+}

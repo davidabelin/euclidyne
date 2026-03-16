@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}References{% endblock %}
+
+{% block content %}
+<section class="panel card">
+  <p class="eyebrow">Audit Surface</p>
+  <h1>References and Claim Register</h1>
+  <p class="lede">
+    Euclidyne tags each nontrivial statement as verified, analogy, or deferred. This page keeps the audit trail visible.
+  </p>
+
+  <div class="badge-row">
+    <span class="status-badge verified">Verified {{ status_counts.get('verified', 0) }}</span>
+    <span class="status-badge analogy">Analogy {{ status_counts.get('analogy', 0) }}</span>
+    <span class="status-badge deferred">Deferred {{ status_counts.get('deferred', 0) }}</span>
+  </div>
+</section>
+
+<section class="two-up">
+  <article class="panel card">
+    <p class="eyebrow">Audit Notes</p>
+    <h2>What the rebuild changed</h2>
+    <ul class="plain-list">
+      {% for note in audit_notes %}
+        <li>{{ note }}</li>
+      {% endfor %}
+    </ul>
+  </article>
+
+  <article class="panel card">
+    <p class="eyebrow">Source Set</p>
+    <h2>Core references</h2>
+    <ul class="plain-list">
+      {% for source in sources %}
+        <li>
+          <a href="{{ source.url }}" target="_blank" rel="noreferrer">{{ source.title }}</a>
+          <div class="muted-note">{{ source.note }}</div>
+        </li>
+      {% endfor %}
+    </ul>
+  </article>
+</section>
+
+<section class="panel table-panel">
+  <h2>Claim Register</h2>
+  <div class="table-shell">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>status</th>
+          <th>statement</th>
+          <th>sources</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for claim in claims %}
+          <tr>
+            <td><span class="status-badge {{ claim.status }}">{{ claim.status|capitalize }}</span></td>
+            <td>{{ claim.statement }}</td>
+            <td class="mono">
+              {% for source_id in claim.source_ids %}
+                {% for source in sources if source.id == source_id %}
+                  <a href="{{ source.url }}" target="_blank" rel="noreferrer">{{ source.id }}</a>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+              {% endfor %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

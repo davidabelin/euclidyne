@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Extended Euclidean Table{% endblock %}
+
+{% block extra_head %}
+<style>
+  .stats {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+  }
+
+  .stat {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #f9fcff;
+    padding: 10px 12px;
+  }
+
+  .stat .label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  .stat .value {
+    margin-top: 4px;
+    font-size: 1.16rem;
+    font-weight: 700;
+  }
+
+  .stat.gcd {
+    border-color: #d88e92;
+    background: #fff1f2;
+  }
+
+  .stat.gcd .value {
+    font-size: 1.42rem;
+    color: var(--danger);
+  }
+
+  .table-wrap {
+    margin-top: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: auto;
+    background: #fff;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    min-width: 900px;
+  }
+
+  th,
+  td {
+    border-bottom: 1px solid #d9e2ef;
+    border-right: 1px solid #e2e9f3;
+    padding: 7px 8px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  th {
+    background: #edf3fb;
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    color: #2f455c;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  td:first-child,
+  th:first-child {
+    text-align: center;
+  }
+
+  tr.gcd-row td {
+    background: #fff3f4;
+  }
+
+  tr.stop-row td {
+    background: #fff7e9;
+  }
+
+  .r-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 1px 8px;
+    border: 1px solid #d6deea;
+    background: #fff;
+    font-weight: 600;
+  }
+
+  .legend {
+    margin-top: 10px;
+    color: var(--muted);
+    line-height: 1.4;
+    font-size: 0.9rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h1 class="page-title">Extended Euclidean Algorithm Table</h1>
+  <p class="page-subtitle">
+    Color-coded extended state with direct recurrence formulas for each row. The GCD is surfaced as a dedicated output card.
+  </p>
+
+  <form method="post" class="form-row">
+    <label class="field">Input a
+      <input name="a" type="number" step="1" required value="{{ a }}">
+    </label>
+    <label class="field">Input b
+      <input name="b" type="number" step="1" required value="{{ b }}">
+    </label>
+    <button class="btn" type="submit">Compute</button>
+  </form>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  {% if model %}
+    <div class="stats">
+      <div class="stat gcd">
+        <div class="label">GCD</div>
+        <div class="value">gcd({{ model.a }}, {{ model.b }}) = {{ model.gcd }}</div>
+      </div>
+      <div class="stat">
+        <div class="label">Division Steps</div>
+        <div class="value">{{ model.division_steps|length }}</div>
+      </div>
+      <div class="stat">
+        <div class="label">Bezout Coefficients</div>
+        <div class="value">x = {{ model.x }}, y = {{ model.y }}</div>
+      </div>
+      <div class="stat">
+        <div class="label">Identity Check</div>
+        <div class="value">{{ model.a }}*({{ model.x }}) + {{ model.b }}*({{ model.y }}) = {{ model.gcd }}</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>i</th>
+            <th>q_i</th>
+            <th>r_i</th>
+            <th>r recurrence</th>
+            <th>s_i</th>
+            <th>s recurrence</th>
+            <th>t_i</th>
+            <th>t recurrence</th>
+            <th>a*s_i + b*t_i</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in model.rows %}
+            <tr class="{% if row.is_gcd %}gcd-row{% elif row.is_stop %}stop-row{% endif %}">
+              <td>{{ row.i }}</td>
+              <td>{% if row.q is not none %}{{ row.q }}{% endif %}</td>
+              <td>
+                <span class="r-badge" style="color: {{ row.r_color }};">{{ row.r }}</span>
+              </td>
+              <td>{% if row.r_expr %}{{ row.r_expr }}{% endif %}</td>
+              <td>{{ row.s }}</td>
+              <td>{% if row.s_expr %}{{ row.s_expr }}{% endif %}</td>
+              <td>{{ row.t }}</td>
+              <td>{% if row.t_expr %}{{ row.t_expr }}{% endif %}</td>
+              <td>{{ model.a }}*({{ row.s }}) + {{ model.b }}*({{ row.t }}) = {{ row.r }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="legend mono">
+      Highlighted rows: <span style="color: var(--danger);">GCD row i={{ model.gcd_idx }}</span> and
+      <span style="color: #8b5a00;">termination row i={{ model.stop_idx }}</span>.
+    </p>
+  {% endif %}
+</section>
+{% endblock %}

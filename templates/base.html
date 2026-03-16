@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Euclidorithm{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --bg-alt: #eef3fa;
+      --card: #ffffff;
+      --text: #19212a;
+      --muted: #4e5a67;
+      --border: #cad5e3;
+      --brand: #0a4f8b;
+      --brand-soft: #dbe9f8;
+      --danger: #b1191c;
+      --ok: #17643a;
+      --mono: "IBM Plex Mono", Menlo, Consolas, monospace;
+      --sans: "IBM Plex Sans", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at 20% 10%, #f9fcff 0%, transparent 42%),
+        radial-gradient(circle at 82% 18%, #dce9f8 0%, transparent 36%),
+        linear-gradient(160deg, var(--bg), var(--bg-alt));
+      min-height: 100vh;
+    }
+
+    .bg-orb {
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(60px);
+      opacity: 0.32;
+      z-index: -1;
+    }
+
+    .bg-orb-a {
+      width: 240px;
+      height: 240px;
+      background: #90b7df;
+      top: -80px;
+      right: 4vw;
+    }
+
+    .bg-orb-b {
+      width: 260px;
+      height: 260px;
+      background: #bdd4ec;
+      bottom: -120px;
+      left: 4vw;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.93);
+      backdrop-filter: blur(7px);
+    }
+
+    .header-inner {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      text-decoration: none;
+      font-size: 0.96rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .brand small {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-left: 8px;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .nav a {
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      border: 1px solid transparent;
+      color: #253447;
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+
+    .nav a:hover {
+      border-color: #aac2de;
+      background: #edf4fb;
+    }
+
+    .nav a.active {
+      border-color: #79a6d0;
+      background: var(--brand-soft);
+      color: #0a3e70;
+      font-weight: 600;
+    }
+
+    .page {
+      max-width: 1140px;
+      margin: 26px auto 36px;
+      padding: 0 16px;
+      flex: 1 0 auto;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 12px 28px rgba(15, 35, 58, 0.06);
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: clamp(1.2rem, 3vw, 1.95rem);
+      line-height: 1.2;
+    }
+
+    .page-subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .form-row {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .field input[type="number"] {
+      width: 150px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: var(--sans);
+      color: var(--text);
+      background: #fff;
+    }
+
+    .btn {
+      border: 1px solid #0a5ca1;
+      border-radius: 8px;
+      background: #0a5ca1;
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-family: var(--sans);
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    .btn:hover {
+      background: #084d87;
+      border-color: #084d87;
+    }
+
+    .btn.secondary {
+      background: #fff;
+      color: #0a5ca1;
+    }
+
+    .btn.secondary:hover {
+      background: #eef5fd;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn:focus-visible,
+    .field input[type="number"]:focus-visible,
+    .nav a:focus-visible {
+      outline: 2px solid #6fa8da;
+      outline-offset: 2px;
+    }
+
+    .error {
+      margin-top: 12px;
+      border: 1px solid #da8d90;
+      background: #fdeeee;
+      color: #7d1d1f;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.94rem;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #b8ccdf;
+      background: #edf4fb;
+      color: #234664;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .chip.danger {
+      border-color: #e2a7aa;
+      background: #fceef0;
+      color: var(--danger);
+    }
+
+    .chip.ok {
+      border-color: #9cd4b2;
+      background: #eaf8f0;
+      color: var(--ok);
+    }
+
+    .mono {
+      font-family: var(--mono);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 14px;
+    }
+
+    .site-footer {
+      max-width: 1140px;
+      margin: 0 auto 24px;
+      padding: 0 16px;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 12px 28px rgba(15, 35, 58, 0.06);
+    }
+
+    .footer-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.4;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .footer-links a {
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: #253447;
+    }
+
+    .footer-links a:hover {
+      background: #edf4fb;
+      border-color: #aac2de;
+    }
+
+    @media (max-width: 980px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .page {
+        margin-top: 18px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn,
+      .nav a {
+        transition: none;
+      }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="bg-orb bg-orb-a"></div>
+  <div class="bg-orb bg-orb-b"></div>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="{{ url_for('launch') }}">Euclidorithm <small>Euclidean Algorithm Lab</small></a>
+      <nav class="nav">
+        <a href="{{ url_for('launch') }}" class="{% if active == 'launch' %}active{% endif %}">Launch</a>
+        <a href="{{ url_for('table_view') }}" class="{% if active == 'table' %}active{% endif %}">Extended Table</a>
+        <a href="{{ url_for('quick_view') }}" class="{% if active == 'quick' %}active{% endif %}">Quick Check</a>
+        <a href="{{ url_for('gear_view') }}" class="{% if active == 'gear' %}active{% endif %}">Gear Model</a>
+        <a href="{{ url_for('lock_view') }}" class="{% if active == 'lock' %}active{% endif %}">Lock Model</a>
+        <a href="{{ aix_hub_url }}">Back to AIX Hub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-copy">GNU copyright 2026 AIX Protodyne</p>
+      <nav class="footer-links" aria-label="AIX footer">
+        <a href="{{ aix_contact_url }}">Contact Us</a>
+        <a href="{{ aix_privacy_url }}">Privacy</a>
+        <a href="{{ aix_toc_url }}">AIX TOC</a>
+      </nav>
+    </div>
+  </footer>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

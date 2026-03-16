@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+
+{% block title %}Lock Model{% endblock %}
+
+{% block extra_head %}
+<style>
+  .controls {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .dial-stage {
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f9fcff 0%, #f1f6fc 100%);
+    padding: 10px;
+  }
+
+  .equation,
+  .summary,
+  .combination,
+  .timeline {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    padding: 10px;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .equation {
+    margin-top: 10px;
+    min-height: 86px;
+  }
+
+  .summary {
+    min-height: 95px;
+  }
+
+  .combination {
+    margin-top: 10px;
+    white-space: normal;
+    line-height: 1.55;
+  }
+
+  .timeline {
+    margin-top: 14px;
+  }
+
+  .timeline h3 {
+    margin: 0 0 8px;
+    font-family: var(--sans);
+    font-size: 1rem;
+  }
+
+  .timeline-list {
+    max-height: 290px;
+    overflow: auto;
+    border: 1px solid #dce5f1;
+    border-radius: 8px;
+    padding: 8px;
+    background: #fbfdff;
+  }
+
+  .timeline-line {
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    padding: 2px 0;
+    transition: background-color 160ms ease;
+  }
+
+  .timeline-line.new {
+    background: #eef5fd;
+    border-radius: 5px;
+    padding-left: 6px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h1 class="page-title">Mechanical Combination Lock Model</h1>
+  <p class="page-subtitle">
+    Single rotating dial, fixed pointer, signed turn plan, and line-by-line persistent Bezout state timeline.
+  </p>
+
+  <form method="post" class="form-row">
+    <label class="field">Input a
+      <input name="a" type="number" step="1" required value="{{ a }}">
+    </label>
+    <label class="field">Input b
+      <input name="b" type="number" step="1" required value="{{ b }}">
+    </label>
+    <button class="btn" type="submit">Compute</button>
+  </form>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  {% if model %}
+    <div class="grid-2">
+      <section>
+        <div class="controls">
+          <button id="lockBack" class="btn secondary" type="button">Back</button>
+          <button id="lockNext" class="btn" type="button">Next Step</button>
+          <button id="lockPlay" class="btn secondary" type="button">Play</button>
+          <button id="lockReset" class="btn secondary" type="button">Reset</button>
+          <button id="lockEnd" class="btn secondary" type="button">Jump to End</button>
+          <span id="lockState" class="chip"></span>
+          <span id="lockStatus" class="chip"></span>
+          <span id="lockUnlock" class="chip"></span>
+        </div>
+
+        <div class="dial-stage">
+          <svg id="lockSvg" viewBox="0 0 460 420" width="100%" height="388" aria-label="combination lock dial"></svg>
+        </div>
+
+        <div id="lockEquation" class="equation"></div>
+      </section>
+
+      <section>
+        <div id="lockSummary" class="summary"></div>
+        <div id="lockCombination" class="combination"></div>
+      </section>
+    </div>
+
+    <section class="timeline">
+      <h3>Bezout State Timeline (persistent, in order)</h3>
+      <div id="lockTimeline" class="timeline-list"></div>
+    </section>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if model %}
+<script>
+  const model = {{ model | tojson }};
+
+  const ui = {
+    svg: document.getElementById("lockSvg"),
+    equation: document.getElementById("lockEquation"),
+    summary: document.getElementById("lockSummary"),
+    combination: document.getElementById("lockCombination"),
+    timeline: document.getElementById("lockTimeline"),
+    state: document.getElementById("lockState"),
+    status: document.getElementById("lockStatus"),
+    unlock: document.getElementById("lockUnlock"),
+    back: document.getElementById("lockBack"),
+    next: document.getElementById("lockNext"),
+    play: document.getElementById("lockPlay"),
+    reset: document.getElementById("lockReset"),
+    end: document.getElementById("lockEnd"),
+  };
+
+  let state = 0;
+  const DIAL_MOD = 40;
+  const MOTION_MS = 430;
+  const AUTO_STEP_MS = 920;
+  let currentTurnUnits = 0;
+  let animFrame = null;
+  let isAnimating = false;
+  let autoTimer = null;
+  let autoMode = false;
+
+  function mod(n, m) {
+    return ((n % m) + m) % m;
+  }
+
+  function cumulativeTurnUnits(stepCount) {
+    let turns = 0;
+    for (let i = 0; i < stepCount; i += 1) {
+      turns += model.turn_plan[i];
+    }
+    return turns;
+  }
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function drawDial(turnUnits) {
+    const cx = 230;
+    const cy = 220;
+    const outerR = 156;
+    const innerR = 62;
+    const position = mod(turnUnits, DIAL_MOD);
+    const dialRotation = -turnUnits * (360 / DIAL_MOD);
+
+    let ticks = "";
+    for (let i = 0; i < DIAL_MOD; i += 1) {
+      const a = (i * 2 * Math.PI) / DIAL_MOD;
+      const isMajor = i % 5 === 0;
+      const r1 = outerR - (isMajor ? 24 : 14);
+      const r2 = outerR - 3;
+      const x1 = cx + r1 * Math.sin(a);
+      const y1 = cy - r1 * Math.cos(a);
+      const x2 = cx + r2 * Math.sin(a);
+      const y2 = cy - r2 * Math.cos(a);
+      ticks += `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="#2c4c71" stroke-width="${isMajor ? 2.2 : 1.2}"/>`;
+    }
+
+    let numbers = "";
+    for (let i = 0; i < DIAL_MOD; i += 1) {
+      const a = (i * 2 * Math.PI) / DIAL_MOD;
+      const rr = outerR - 38;
+      const x = cx + rr * Math.sin(a);
+      const y = cy - rr * Math.cos(a);
+      const size = i % 5 === 0 ? 14 : 11;
+      numbers += `<text x="${x.toFixed(2)}" y="${y.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-size="${size}" fill="#233c5d">${i}</text>`;
+    }
+
+    ui.svg.innerHTML = `
+      <defs>
+        <filter id="dialShadow" x="-35%" y="-35%" width="170%" height="170%">
+          <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#2b4a6f" flood-opacity="0.25"/>
+        </filter>
+      </defs>
+      <circle cx="${cx}" cy="${cy}" r="${outerR + 24}" fill="#f2f6fc" stroke="#ccd8e8" stroke-width="2"/>
+
+      <g transform="rotate(${dialRotation} ${cx} ${cy})" filter="url(#dialShadow)">
+        <circle cx="${cx}" cy="${cy}" r="${outerR}" fill="#d9e8f9" stroke="#2f547d" stroke-width="2"/>
+        ${ticks}
+        ${numbers}
+        <circle cx="${cx}" cy="${cy}" r="${innerR}" fill="#f9fcff" stroke="#2f547d" stroke-width="2"/>
+        <text x="${cx}" y="${cy + 6}" text-anchor="middle" font-size="17" font-weight="700" fill="#2f547d">DIAL</text>
+      </g>
+
+      <polygon points="${cx - 12},34 ${cx + 12},34 ${cx},61" fill="#b1191c"/>
+      <text x="${cx}" y="26" text-anchor="middle" font-size="13" fill="#5a2224">Fixed pointer</text>
+      <text x="${cx}" y="395" text-anchor="middle" font-size="14" fill="#2f465f">Dial position = ${position} (absolute turns = ${turnUnits.toFixed(2)})</text>
+    `;
+  }
+
+  function renderSummary() {
+    ui.summary.innerHTML =
+      `GCD(${model.a}, ${model.b}) = <span style="color:var(--danger);font-weight:700;">${model.gcd}</span><br>` +
+      `Bezout coefficients: x=${model.x}, y=${model.y}<br>` +
+      `${model.a}*(${model.x}) + ${model.b}*(${model.y}) = ${model.gcd}`;
+
+    const combinationString = model.turn_plan
+      .map((v) => (v >= 0 ? `+${v}` : `${v}`))
+      .join(", ");
+    const inverseLine = model.inverse_mod_b === null
+      ? "No modular inverse in mod b because gcd(a,b) != 1."
+      : `Inverse of a mod b = ${model.inverse_mod_b}`;
+
+    ui.combination.innerHTML =
+      `<strong>Combination</strong><br>${combinationString || "(no turns)"}<br><br>` +
+      `<strong>Turn convention</strong><br>Positive = CW, Negative = CCW<br><br>` +
+      `<strong>Key result</strong><br>${inverseLine}`;
+  }
+
+  function renderEquation() {
+    if (state === 0) {
+      ui.equation.innerHTML =
+        `Start: dial at 0. Press Next Step to apply quotient q_1 as the first turn.<br>` +
+        `Initial values: A=${model.r[0]}, B=${model.r[1]}.`;
+      return;
+    }
+
+    const st = model.division_steps[state - 1];
+    const signedTurn = model.turn_plan[state - 1];
+    const direction = signedTurn >= 0 ? "CW" : "CCW";
+
+    ui.equation.innerHTML =
+      `Step ${state}: turn ${direction} by ${Math.abs(signedTurn)} ticks (signed: ${signedTurn}).<br>` +
+      `${st.A} = ${st.B} * ${st.q} + ${st.r}<br>` +
+      `Effect source: quotient q_${state} = ${st.q}.`;
+  }
+
+  function renderTimeline() {
+    const revealCount = Math.min(model.bezout_lines.length, state + 2);
+    let html = "";
+
+    for (let i = 0; i < revealCount; i += 1) {
+      const line = model.bezout_lines[i];
+      const isNewest = i === revealCount - 1;
+      const cls = isNewest ? "timeline-line new" : "timeline-line";
+      html += `<div class="${cls}">` +
+        `${line.i}: ${line.lhs_a}*(${line.s}) + ${line.lhs_b}*(${line.t}) = ` +
+        `<span style="color:${line.r_color};font-weight:600;">${line.r}</span>` +
+        `</div>`;
+    }
+
+    ui.timeline.innerHTML = html;
+    ui.timeline.scrollTop = ui.timeline.scrollHeight;
+  }
+
+  function renderDialOnly() {
+    drawDial(currentTurnUnits);
+  }
+
+  function setAutoMode(enabled) {
+    autoMode = enabled;
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+    }
+    ui.play.textContent = autoMode ? "Pause" : "Play";
+    if (autoMode) {
+      autoTimer = setInterval(() => {
+        if (isAnimating) {
+          return;
+        }
+        if (state >= model.division_steps.length) {
+          setAutoMode(false);
+          return;
+        }
+        goToState(state + 1);
+      }, AUTO_STEP_MS);
+    }
+  }
+
+  function animateTurnUnitsTo(targetTurnUnits) {
+    if (animFrame !== null) {
+      cancelAnimationFrame(animFrame);
+      animFrame = null;
+    }
+
+    const start = currentTurnUnits;
+    const delta = targetTurnUnits - start;
+    if (Math.abs(delta) < 1e-9) {
+      currentTurnUnits = targetTurnUnits;
+      isAnimating = false;
+      renderDialOnly();
+      renderStateUi();
+      return;
+    }
+
+    isAnimating = true;
+    renderStateUi();
+    const duration = Math.min(1100, MOTION_MS + Math.abs(delta) * 30);
+    const t0 = performance.now();
+
+    function frame(ts) {
+      const raw = (ts - t0) / duration;
+      const p = raw >= 1 ? 1 : raw;
+      currentTurnUnits = start + delta * easeOutCubic(p);
+      renderDialOnly();
+      if (p < 1) {
+        animFrame = requestAnimationFrame(frame);
+      } else {
+        animFrame = null;
+        currentTurnUnits = targetTurnUnits;
+        isAnimating = false;
+        renderDialOnly();
+        renderStateUi();
+      }
+    }
+
+    animFrame = requestAnimationFrame(frame);
+  }
+
+  function renderStateUi() {
+    renderSummary();
+    renderEquation();
+    renderTimeline();
+
+    ui.state.textContent = `Step ${state} / ${model.division_steps.length}`;
+    if (isAnimating) {
+      ui.status.textContent = "ANIMATING";
+      ui.status.className = "chip";
+    } else if (state >= model.division_steps.length) {
+      ui.status.textContent = "DONE";
+      ui.status.className = "chip ok";
+    } else {
+      ui.status.textContent = "RUNNING";
+      ui.status.className = "chip";
+    }
+
+    if (model.gcd === 1) {
+      ui.unlock.textContent = state >= model.division_steps.length ? "UNLOCKED" : "Unlock possible";
+      ui.unlock.className = state >= model.division_steps.length ? "chip ok" : "chip";
+    } else {
+      ui.unlock.textContent = state >= model.division_steps.length ? "LOCKED (gcd>1)" : "Unlock blocked";
+      ui.unlock.className = "chip danger";
+    }
+
+    ui.back.disabled = isAnimating || state === 0;
+    ui.next.disabled = isAnimating || state >= model.division_steps.length;
+    ui.reset.disabled = isAnimating || state === 0;
+    ui.end.disabled = isAnimating || state >= model.division_steps.length;
+
+    if (!isAnimating && state >= model.division_steps.length && autoMode) {
+      setAutoMode(false);
+    }
+  }
+
+  function goToState(targetState) {
+    const clamped = Math.max(0, Math.min(model.division_steps.length, targetState));
+    if (clamped === state && !isAnimating) {
+      return;
+    }
+    state = clamped;
+    renderStateUi();
+    animateTurnUnitsTo(cumulativeTurnUnits(state));
+  }
+
+  ui.back.addEventListener("click", () => {
+    if (!isAnimating && state > 0) {
+      goToState(state - 1);
+    }
+  });
+
+  ui.next.addEventListener("click", () => {
+    if (!isAnimating && state < model.division_steps.length) {
+      goToState(state + 1);
+    }
+  });
+
+  ui.play.addEventListener("click", () => {
+    if (isAnimating) {
+      return;
+    }
+    if (!autoMode && state >= model.division_steps.length) {
+      goToState(0);
+    }
+    setAutoMode(!autoMode);
+  });
+
+  ui.reset.addEventListener("click", () => {
+    if (!isAnimating) {
+      setAutoMode(false);
+      goToState(0);
+    }
+  });
+
+  ui.end.addEventListener("click", () => {
+    if (!isAnimating) {
+      setAutoMode(false);
+      goToState(model.division_steps.length);
+    }
+  });
+
+  renderDialOnly();
+  renderStateUi();
+</script>
+{% endif %}
+{% endblock %}

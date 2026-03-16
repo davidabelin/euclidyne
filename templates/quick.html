@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Quick Euclid Check{% endblock %}
+
+{% block extra_head %}
+<style>
+  .output {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fcfdff;
+    padding: 10px;
+  }
+
+  .line {
+    font-family: var(--mono);
+    font-size: 0.97rem;
+    line-height: 1.48;
+    white-space: nowrap;
+    overflow-x: auto;
+  }
+
+  .summary {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #f8fbff;
+    padding: 10px;
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .gcd-strong {
+    color: var(--danger);
+    font-weight: 700;
+  }
+
+  .coef {
+    color: #7d265d;
+    font-weight: 600;
+  }
+
+  .q {
+    color: #0a5ca1;
+    font-weight: 600;
+  }
+
+  .legend {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h1 class="page-title">Quick Check (euclidA.py style)</h1>
+  <p class="page-subtitle">One-line-per-step output for rapid verification with stable value colors across the sequence.</p>
+
+  <form method="post" class="form-row">
+    <label class="field">Input a
+      <input name="a" type="number" step="1" required value="{{ a }}">
+    </label>
+    <label class="field">Input b
+      <input name="b" type="number" step="1" required value="{{ b }}">
+    </label>
+    <button class="btn" type="submit">Compute</button>
+  </form>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  {% if model %}
+    <div class="output">
+      {% for line in quick_lines %}
+        <div class="line">
+          <span style="color: {{ line.a_color }};">{{ line.A }}</span>
+          =
+          <span style="color: {{ line.b_color }};">{{ line.B }}</span>
+          *
+          <span class="q">{{ line.q }}</span>
+          +
+          <span style="color: {{ line.r_color }};">{{ line.r }}</span>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="summary">
+      <div>Steps taken     =      {{ model.division_steps|length }}</div>
+      <div>GCD({{ model.a }}, {{ model.b }}) = <span class="gcd-strong">{{ model.gcd }}</span></div>
+      <div>
+        Bezout coefficients: x=<span class="coef">{{ model.x }}</span>, y=<span class="coef">{{ model.y }}</span>
+        (so {{ model.a }}*<span class="coef">{{ model.x }}</span> + {{ model.b }}*<span class="coef">{{ model.y }}</span> =
+        <span class="gcd-strong">{{ model.gcd }}</span>)
+      </div>
+    </div>
+
+    <p class="legend mono">Quotients are blue; Bezout coefficients are magenta; each remainder index keeps one color through the full run.</p>
+  {% endif %}
+</section>
+{% endblock %}

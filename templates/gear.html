@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% block title %}Gear Model{% endblock %}
+
+{% block extra_head %}
+<style>
+  .controls {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .stage {
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f9fcff 0%, #f0f5fb 100%);
+    padding: 8px;
+  }
+
+  .equation,
+  .summary,
+  .history {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    padding: 10px;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    line-height: 1.42;
+  }
+
+  .equation {
+    margin-top: 10px;
+    min-height: 84px;
+  }
+
+  .summary {
+    min-height: 102px;
+  }
+
+  .history {
+    margin-top: 10px;
+    max-height: 192px;
+    overflow: auto;
+  }
+
+  .history-line {
+    padding: 3px 0;
+    transition: background-color 160ms ease;
+  }
+
+  .history-line.current {
+    background: #eef5fd;
+    border-radius: 6px;
+    padding-left: 6px;
+  }
+
+  .step-table {
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: auto;
+    background: #fff;
+  }
+
+  .step-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.84rem;
+  }
+
+  .step-table th,
+  .step-table td {
+    border-bottom: 1px solid #dce5f1;
+    padding: 6px 7px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .step-table th:first-child,
+  .step-table td:first-child {
+    text-align: center;
+  }
+
+  .step-table tr.active td {
+    background: #eef5fd;
+  }
+
+  .kicker {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h1 class="page-title">Interlocking Gear Model</h1>
+  <p class="page-subtitle">
+    Two fixed-size toothed gears stay meshed with constant speed ratio. Each Euclid quotient applies one discrete driver turn count.
+  </p>
+
+  <form method="post" class="form-row">
+    <label class="field">Input a
+      <input name="a" type="number" step="1" required value="{{ a }}">
+    </label>
+    <label class="field">Input b
+      <input name="b" type="number" step="1" required value="{{ b }}">
+    </label>
+    <button class="btn" type="submit">Compute</button>
+  </form>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  {% if model %}
+    <div class="grid-2">
+      <section>
+        <div class="controls">
+          <button id="gearBack" class="btn secondary" type="button">Back</button>
+          <button id="gearNext" class="btn" type="button">Next Step</button>
+          <button id="gearPlay" class="btn secondary" type="button">Play</button>
+          <button id="gearReset" class="btn secondary" type="button">Reset</button>
+          <button id="gearEnd" class="btn secondary" type="button">Jump to End</button>
+          <span id="gearState" class="chip"></span>
+          <span id="gearStatus" class="chip"></span>
+        </div>
+
+        <div class="stage">
+          <svg id="gearSvg" viewBox="0 0 760 420" width="100%" height="390" aria-label="interlocking gears"></svg>
+        </div>
+
+        <div id="gearEquation" class="equation"></div>
+
+        <p class="kicker mono">
+          Fixed geometry: driver teeth=32, follower teeth=20, center distance constant, tooth mesh never breaks.
+        </p>
+      </section>
+
+      <section>
+        <div id="gearSummary" class="summary"></div>
+        <div id="gearHistory" class="history"></div>
+
+        <div class="step-table">
+          <table>
+            <thead>
+              <tr>
+                <th>step</th>
+                <th>A</th>
+                <th>B</th>
+                <th>q</th>
+                <th>r</th>
+              </tr>
+            </thead>
+            <tbody id="gearTableBody">
+              {% for st in model.division_steps %}
+                <tr data-step="{{ st.step }}">
+                  <td>{{ st.step }}</td>
+                  <td>{{ st.A }}</td>
+                  <td>{{ st.B }}</td>
+                  <td>{{ st.q }}</td>
+                  <td>{{ st.r }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if model %}
+<script>
+  const model = {{ model | tojson }};
+
+  const ui = {
+    svg: document.getElementById("gearSvg"),
+    equation: document.getElementById("gearEquation"),
+    summary: document.getElementById("gearSummary"),
+    history: document.getElementById("gearHistory"),
+    state: document.getElementById("gearState"),
+    status: document.getElementById("gearStatus"),
+    tableBody: document.getElementById("gearTableBody"),
+    back: document.getElementById("gearBack"),
+    next: document.getElementById("gearNext"),
+    play: document.getElementById("gearPlay"),
+    reset: document.getElementById("gearReset"),
+    end: document.getElementById("gearEnd"),
+  };
+
+  const gearSpec = {
+    driverTeeth: 32,
+    followerTeeth: 20,
+    driverRadius: 130,
+    followerRadius: 82,
+    cxA: 240,
+    cy: 220,
+    cxB: 452,
+  };
+
+  const degPerToothDriver = 360 / gearSpec.driverTeeth;
+  const MOTION_MS = 460;
+  const AUTO_STEP_MS = 900;
+  let state = 0;
+  let currentFloatState = 0;
+  let animFrame = null;
+  let isAnimating = false;
+  let autoTimer = null;
+  let autoMode = false;
+
+  function mod(n, m) {
+    return ((n % m) + m) % m;
+  }
+
+  function cumulativeDriverAngle(stepCount) {
+    let angle = 0;
+    for (let i = 0; i < stepCount; i += 1) {
+      angle += model.division_steps[i].q * degPerToothDriver;
+    }
+    return angle;
+  }
+
+  function cumulativeDriverAngleFloat(stepFloat) {
+    const whole = Math.floor(stepFloat);
+    const frac = stepFloat - whole;
+    let angle = cumulativeDriverAngle(whole);
+    if (whole < model.division_steps.length) {
+      angle += model.division_steps[whole].q * degPerToothDriver * frac;
+    }
+    return angle;
+  }
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function gearPath(radius, teeth, toothDepth) {
+    let d = "";
+    const points = teeth * 2;
+    for (let i = 0; i < points; i += 1) {
+      const a = (Math.PI * i) / teeth;
+      const rr = i % 2 === 0 ? radius + toothDepth : radius - 3;
+      const x = rr * Math.cos(a);
+      const y = rr * Math.sin(a);
+      d += (i === 0 ? "M" : "L") + x.toFixed(2) + " " + y.toFixed(2) + " ";
+    }
+    return d + "Z";
+  }
+
+  function buildHistory() {
+    let html = "";
+    for (let i = 0; i < model.division_steps.length; i += 1) {
+      const st = model.division_steps[i];
+      const currentClass = i + 1 === state ? "history-line current" : "history-line";
+      html += `<div class="${currentClass}">` +
+        `${st.step}) ${st.A} = ${st.B} * ${st.q} + ${st.r}` +
+        `</div>`;
+    }
+    ui.history.innerHTML = html || "<div class='history-line'>No steps.</div>";
+  }
+
+  function updateTableHighlight() {
+    const rows = ui.tableBody.querySelectorAll("tr");
+    rows.forEach((row) => {
+      const rowStep = Number(row.getAttribute("data-step"));
+      row.classList.toggle("active", rowStep === state);
+    });
+  }
+
+  function renderGears(stepFloat) {
+    const driverAngle = cumulativeDriverAngleFloat(stepFloat);
+    const followerAngle = -driverAngle * (gearSpec.driverTeeth / gearSpec.followerTeeth);
+
+    const driverTooth = mod(Math.round(driverAngle / degPerToothDriver), gearSpec.driverTeeth);
+    const followerTooth = mod(
+      Math.round(followerAngle / (360 / gearSpec.followerTeeth)),
+      gearSpec.followerTeeth
+    );
+
+    const pathA = gearPath(gearSpec.driverRadius, gearSpec.driverTeeth, 9);
+    const pathB = gearPath(gearSpec.followerRadius, gearSpec.followerTeeth, 9);
+
+    const idx = Math.min(Math.floor(stepFloat), model.r.length - 2);
+    const currentA = model.r[idx];
+    const currentB = model.r[idx + 1];
+
+    ui.svg.innerHTML = `
+      <defs>
+        <filter id="gearGlow" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#2e6fa9" flood-opacity="0.55"/>
+        </filter>
+      </defs>
+      <rect x="0" y="0" width="760" height="420" fill="transparent"/>
+
+      <line x1="${gearSpec.cxA + gearSpec.driverRadius}" y1="${gearSpec.cy}" x2="${gearSpec.cxB - gearSpec.followerRadius}" y2="${gearSpec.cy}" stroke="#5f7ea3" stroke-width="5" />
+
+      <g transform="translate(${gearSpec.cxA} ${gearSpec.cy}) rotate(${driverAngle})" filter="url(#gearGlow)">
+        <path d="${pathA}" fill="#d3e5f8" stroke="#2d527c" stroke-width="2"/>
+        <circle r="84" fill="#f8fbff" stroke="#2d527c" stroke-width="2"/>
+      </g>
+
+      <g transform="translate(${gearSpec.cxB} ${gearSpec.cy}) rotate(${followerAngle})">
+        <path d="${pathB}" fill="#dcebf9" stroke="#2d527c" stroke-width="2"/>
+        <circle r="50" fill="#fbfdff" stroke="#2d527c" stroke-width="2"/>
+      </g>
+
+      <text x="${gearSpec.cxA}" y="38" text-anchor="middle" font-size="14" fill="#2b4059">Driver gear (fixed size)</text>
+      <text x="${gearSpec.cxB}" y="38" text-anchor="middle" font-size="14" fill="#2b4059">Follower gear (fixed size)</text>
+
+      <text x="${gearSpec.cxA}" y="226" text-anchor="middle" font-size="28" font-weight="700" fill="#0f4c81">${currentA}</text>
+      <text x="${gearSpec.cxB}" y="226" text-anchor="middle" font-size="28" font-weight="700" fill="#7f5539">${currentB}</text>
+
+      <text x="${gearSpec.cxA}" y="378" text-anchor="middle" font-size="13" fill="#30455f">teeth=${gearSpec.driverTeeth} | angle=${driverAngle.toFixed(2)} deg</text>
+      <text x="${gearSpec.cxB}" y="378" text-anchor="middle" font-size="13" fill="#30455f">teeth=${gearSpec.followerTeeth} | angle=${followerAngle.toFixed(2)} deg</text>
+      <text x="350" y="82" text-anchor="middle" font-size="13" fill="#2f4662">Contact tooth pair: A[${driverTooth}] <-> B[${followerTooth}]</text>
+    `;
+  }
+
+  function renderEquation() {
+    if (state === 0) {
+      ui.equation.innerHTML = `Start: A=${model.r[0]}, B=${model.r[1]}.<br>Press Next Step to apply the first quotient as a driver turn count.`;
+      return;
+    }
+
+    const st = model.division_steps[state - 1];
+    ui.equation.innerHTML =
+      `${st.A} = ${st.B} * <span style="color:#0a5ca1;">${st.q}</span> + ${st.r}<br>` +
+      `Mechanical update: driver rotates ${st.q} tooth-pitches; follower rotates opposite direction with ratio ${gearSpec.driverTeeth}:${gearSpec.followerTeeth}.`;
+  }
+
+  function renderSummary() {
+    ui.summary.innerHTML =
+      `Steps taken     =      ${model.division_steps.length}<br>` +
+      `GCD(${model.a}, ${model.b}) = <span style="color:var(--danger);font-weight:700;">${model.gcd}</span><br>` +
+      `Bezout: x=${model.x}, y=${model.y}<br>` +
+      `${model.a}*(${model.x}) + ${model.b}*(${model.y}) = ${model.gcd}`;
+  }
+
+  function renderVisual() {
+    renderGears(currentFloatState);
+  }
+
+  function syncHistoryScroll() {
+    const currentRow = ui.history.querySelector(".history-line.current");
+    if (currentRow) {
+      currentRow.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+  }
+
+  function setAutoMode(enabled) {
+    autoMode = enabled;
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+    }
+
+    ui.play.textContent = autoMode ? "Pause" : "Play";
+
+    if (autoMode) {
+      autoTimer = setInterval(() => {
+        if (isAnimating) {
+          return;
+        }
+        if (state >= model.division_steps.length) {
+          setAutoMode(false);
+          return;
+        }
+        goToState(state + 1);
+      }, AUTO_STEP_MS);
+    }
+  }
+
+  function animateToState(targetState) {
+    if (animFrame !== null) {
+      cancelAnimationFrame(animFrame);
+      animFrame = null;
+    }
+
+    const start = currentFloatState;
+    const delta = targetState - start;
+    if (Math.abs(delta) < 1e-9) {
+      currentFloatState = targetState;
+      isAnimating = false;
+      renderVisual();
+      renderStateUi();
+      return;
+    }
+
+    isAnimating = true;
+    renderStateUi();
+    const duration = Math.min(1100, MOTION_MS + Math.abs(delta) * 140);
+    const t0 = performance.now();
+
+    function frame(ts) {
+      const raw = (ts - t0) / duration;
+      const p = raw >= 1 ? 1 : raw;
+      currentFloatState = start + delta * easeOutCubic(p);
+      renderVisual();
+      if (p < 1) {
+        animFrame = requestAnimationFrame(frame);
+      } else {
+        animFrame = null;
+        currentFloatState = targetState;
+        isAnimating = false;
+        renderVisual();
+        renderStateUi();
+      }
+    }
+
+    animFrame = requestAnimationFrame(frame);
+  }
+
+  function renderStateUi() {
+    renderEquation();
+    renderSummary();
+    buildHistory();
+    syncHistoryScroll();
+    updateTableHighlight();
+
+    ui.state.textContent = `Step ${state} / ${model.division_steps.length}`;
+    if (isAnimating) {
+      ui.status.textContent = "ANIMATING";
+      ui.status.className = "chip";
+    } else if (state >= model.division_steps.length) {
+      ui.status.textContent = "DONE";
+      ui.status.className = "chip ok";
+    } else {
+      ui.status.textContent = "RUNNING";
+      ui.status.className = "chip";
+    }
+
+    ui.back.disabled = isAnimating || state === 0;
+    ui.next.disabled = isAnimating || state >= model.division_steps.length;
+    ui.reset.disabled = isAnimating || state === 0;
+    ui.end.disabled = isAnimating || state >= model.division_steps.length;
+
+    if (!isAnimating && state >= model.division_steps.length && autoMode) {
+      setAutoMode(false);
+    }
+  }
+
+  function goToState(targetState) {
+    const clamped = Math.max(0, Math.min(model.division_steps.length, targetState));
+    if (clamped === state && !isAnimating) {
+      return;
+    }
+    state = clamped;
+    renderStateUi();
+    animateToState(state);
+  }
+
+  ui.back.addEventListener("click", () => {
+    if (!isAnimating && state > 0) {
+      goToState(state - 1);
+    }
+  });
+
+  ui.next.addEventListener("click", () => {
+    if (!isAnimating && state < model.division_steps.length) {
+      goToState(state + 1);
+    }
+  });
+
+  ui.play.addEventListener("click", () => {
+    if (isAnimating) {
+      return;
+    }
+    if (!autoMode && state >= model.division_steps.length) {
+      goToState(0);
+    }
+    setAutoMode(!autoMode);
+  });
+
+  ui.reset.addEventListener("click", () => {
+    if (!isAnimating) {
+      setAutoMode(false);
+      goToState(0);
+    }
+  });
+
+  ui.end.addEventListener("click", () => {
+    if (!isAnimating) {
+      setAutoMode(false);
+      goToState(model.division_steps.length);
+    }
+  });
+
+  renderVisual();
+  renderStateUi();
+</script>
+{% endif %}
+{% endblock %}
