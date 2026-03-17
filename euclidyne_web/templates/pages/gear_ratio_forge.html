@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% from "partials/lab_shell.html" import lab_meta, status_badges %}
+
+{% block title %}{{ page.lab.title }}{% endblock %}
+
+{% block content %}
+<section class="lab-layout">
+  <div class="main-column">
+    <section class="panel card">
+      <p class="eyebrow">Ratios and Geometry</p>
+      <h1>{{ page.lab.title }}</h1>
+      <p class="lede">{{ page.lab.subtitle }}</p>
+      <form method="get" class="form-row">
+        <label class="field">Target numerator
+          <input name="target_num" type="number" min="1" step="1" required value="{{ page.inputs.target_num }}">
+        </label>
+        <label class="field">Target denominator
+          <input name="target_den" type="number" min="1" step="1" required value="{{ page.inputs.target_den }}">
+        </label>
+        <label class="field">Max teeth
+          <input name="max_teeth" type="number" min="8" max="120" step="1" required value="{{ page.inputs.max_teeth }}">
+        </label>
+        <label class="field">Stages
+          <input name="stages" type="number" min="1" max="4" step="1" required value="{{ page.inputs.stages }}">
+        </label>
+        <button class="btn" type="submit">Forge Ratio</button>
+      </form>
+      {{ status_badges(page.claims) }}
+    </section>
+
+    {% if page.model %}
+      <script id="page-model" type="application/json">{{ page | tojson }}</script>
+      <section class="lab-grid">
+        <article class="panel card">
+          <h2>Best Candidate</h2>
+          <div class="stat-grid compact">
+            <article class="stat-card">
+              <p class="label">Target</p>
+              <p class="value mono">{{ page.model.target.numerator }}/{{ page.model.target.denominator }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Selected</p>
+              <p class="value">{{ page.model.candidates.selected.label }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Error</p>
+              <p class="value">{{ page.model.candidates.selected.error_decimal }}</p>
+            </article>
+          </div>
+          <div class="svg-shell">
+            <svg id="gearForgeSvg" viewBox="0 0 720 360" aria-label="Gear candidate"></svg>
+          </div>
+          <div id="gearForgeSummary" class="callout">{{ page.model.notes.design_direction }}</div>
+          <div class="callout">{{ page.model.notes.warning }}</div>
+        </article>
+
+        <article class="panel card">
+          <h2>Continued Fraction and Candidates</h2>
+          <div class="callout mono">{{ page.model.continued_fraction.notation }}</div>
+          <div class="table-shell">
+            <table class="data-table">
+              <thead>
+                <tr><th>type</th><th>label</th><th>ratio</th><th>error</th><th>exact</th></tr>
+              </thead>
+              <tbody>
+                {% for candidate in page.model.candidates.simple %}
+                  <tr>
+                    <td>{{ candidate.kind }}</td>
+                    <td>{{ candidate.label }}</td>
+                    <td class="mono">{{ candidate.realized_ratio.numerator }}/{{ candidate.realized_ratio.denominator }}</td>
+                    <td>{{ candidate.error_decimal }}</td>
+                    <td>{{ "yes" if candidate.exact else "no" }}</td>
+                  </tr>
+                {% endfor %}
+                {% if page.model.candidates.compound %}
+                  <tr>
+                    <td>{{ page.model.candidates.compound.kind }}</td>
+                    <td>{{ page.model.candidates.compound.label }}</td>
+                    <td class="mono">{{ page.model.candidates.compound.realized_ratio.numerator }}/{{ page.model.candidates.compound.realized_ratio.denominator }}</td>
+                    <td>{{ page.model.candidates.compound.error_decimal }}</td>
+                    <td>yes</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    {% endif %}
+  </div>
+
+  {{ lab_meta(page) }}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {% if page.model %}
+    <script type="module" src="{{ url_for('static', filename='js/labs/gear-ratio-forge.js') }}"></script>
+  {% endif %}
+{% endblock %}

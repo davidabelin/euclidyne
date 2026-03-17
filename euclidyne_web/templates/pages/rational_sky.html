@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "partials/lab_shell.html" import lab_meta, swap_notice, status_badges %}
+
+{% block title %}{{ page.lab.title }}{% endblock %}
+
+{% block content %}
+<section class="lab-layout">
+  <div class="main-column">
+    <section class="panel card">
+      <p class="eyebrow">Ratios and Geometry</p>
+      <h1>{{ page.lab.title }}</h1>
+      <p class="lede">{{ page.lab.subtitle }}</p>
+      <form method="get" class="form-row">
+        <label class="field">Max denominator
+          <input name="max_den" type="number" min="2" max="16" step="1" required value="{{ page.inputs.max_den }}">
+        </label>
+        <label class="field">p
+          <input name="p" type="number" min="1" step="1" required value="{{ page.inputs.p }}">
+        </label>
+        <label class="field">q
+          <input name="q" type="number" min="1" step="1" required value="{{ page.inputs.q }}">
+        </label>
+        <label class="field">View
+          <select name="view">
+            {% for item in ["orchard", "farey", "ford", "stern_brocot"] %}
+              <option value="{{ item }}" {% if page.inputs.view == item %}selected{% endif %}>{{ item.replace('_', ' ')|title }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button class="btn" type="submit">Build Sky</button>
+      </form>
+      {{ swap_notice(page) }}
+      {{ status_badges(page.claims) }}
+    </section>
+
+    {% if page.model %}
+      <script src="{{ url_for('static', filename='vendor/d3/d3.v7.9.0.min.js') }}"></script>
+      <script id="page-model" type="application/json">{{ page | tojson }}</script>
+      <section class="panel card">
+        <div class="stat-grid compact">
+          <article class="stat-card">
+            <p class="label">Selected</p>
+            <p class="value mono">{{ page.model.selected.label }}</p>
+          </article>
+          <article class="stat-card">
+            <p class="label">View</p>
+            <p class="value">{{ page.model.view.replace('_', ' ')|title }}</p>
+          </article>
+          <article class="stat-card">
+            <p class="label">Visible Points</p>
+            <p class="value">{{ page.model.orchard.visible_count }}</p>
+          </article>
+        </div>
+        <div class="svg-shell tall">
+          <svg id="rationalSkySvg" viewBox="0 0 720 460" aria-label="Rational sky visualization"></svg>
+        </div>
+      </section>
+    {% endif %}
+  </div>
+
+  {{ lab_meta(page) }}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {% if page.model %}
+    <script type="module" src="{{ url_for('static', filename='js/labs/rational-sky.js') }}"></script>
+  {% endif %}
+{% endblock %}

@@ -5,7 +5,7 @@ This file is retained only as an archival reference.
 
 Current runtime
 ---------------
-The active Flask app now lives in ``euclidorithm.euclidyne:app``.
+The active Flask app now lives in ``euclidyne.euclidyne:app``.
 
 Archive scope
 -------------
@@ -126,4 +126,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

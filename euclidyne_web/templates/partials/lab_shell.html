@@ -1,0 +1,63 @@
+{% macro status_badges(claims) -%}
+  <div class="badge-row">
+    {% for claim in claims %}
+      <span class="status-badge {{ claim.status }}">{{ claim.status.replace('_', ' ')|title }}</span>
+    {% endfor %}
+  </div>
+{%- endmacro %}
+
+{% macro swap_notice(page) -%}
+  {% if page.ui.error %}
+    <div class="notice notice-warning">{{ page.ui.error }}</div>
+  {% endif %}
+  {% if page.ui.needs_swap and page.ui.swap_params %}
+    <div class="notice notice-soft">
+      Canonical order is available for this view.
+      <a class="btn secondary" href="{{ url_for(request.endpoint, **page.ui.swap_params) }}">Swap Inputs</a>
+    </div>
+  {% endif %}
+{%- endmacro %}
+
+{% macro lab_meta(page) -%}
+  <section class="lab-aside">
+    <article class="panel card">
+      <p class="eyebrow">Claim Status</p>
+      <h2>Rigour stays visible</h2>
+      {{ status_badges(page.claims) }}
+      <ul class="plain-list">
+        {% for claim in page.claims %}
+          <li>{{ claim.statement }}</li>
+        {% endfor %}
+      </ul>
+    </article>
+
+    {% if page.facts %}
+      <article class="panel card fact-card">
+        <p class="eyebrow">Fun Fact</p>
+        <div class="fact-illustration fact-{{ page.facts[0].illustration.kind|default('medallion') }}">{{ page.facts[0].illustration.label|default('fact') }}</div>
+        <h2>{{ page.facts[0].title }}</h2>
+        <p>{{ page.facts[0].body }}</p>
+      </article>
+    {% endif %}
+
+    <article class="panel card">
+      <p class="eyebrow">Related Labs</p>
+      <h2>Continue Exploring</h2>
+      <ul class="plain-list">
+        {% for item in page.related_labs %}
+          <li><a href="{{ item.route }}">{{ item.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </article>
+
+    <article class="panel card">
+      <p class="eyebrow">Sources</p>
+      <h2>Evidence Trail</h2>
+      <div class="source-list">
+        {% for source in page.sources %}
+          <a class="source-chip" href="{{ source.url }}">{{ source.title }}</a>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+{%- endmacro %}

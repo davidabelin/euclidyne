@@ -81,6 +81,16 @@ h2 {
   color: var(--ink);
 }
 
+.field select {
+  min-width: 180px;
+  padding: 0.62rem 0.72rem;
+  border-radius: 12px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.92);
+  font: inherit;
+  color: var(--ink);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -150,6 +160,12 @@ h2 {
   color: var(--deferred);
   background: rgba(125, 84, 102, 0.11);
   border-color: rgba(125, 84, 102, 0.22);
+}
+
+.status-badge.false {
+  color: var(--falsehood);
+  background: rgba(146, 63, 54, 0.1);
+  border-color: rgba(146, 63, 54, 0.22);
 }
 
 .chip-value {
@@ -261,3 +277,40 @@ h2 {
   padding-left: 1.15rem;
 }
 
+.source-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.35rem 0.65rem;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.fact-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.fact-illustration {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  margin-bottom: 0.8rem;
+  border: 1px solid var(--line);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(239, 228, 207, 0.95));
+  color: var(--accent-3);
+  font-family: "Baskervville", Georgia, serif;
+  font-size: 1rem;
+}

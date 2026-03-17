@@ -7,6 +7,8 @@ from urllib.parse import urljoin
 
 from flask import Flask
 
+from euclidyne.euclidyne_web.lab_registry import top_nav_labs
+
 
 def _normalize_base_url(value: str) -> str:
     raw = str(value or "").strip()
@@ -25,14 +27,14 @@ def create_app(config: dict | None = None) -> Flask:
     app.config.from_mapping(
         SECRET_KEY=os.getenv("FLASK_SECRET_KEY", "euclidyne-dev-key"),
         APP_DISPLAY_NAME="Euclidyne",
-        APP_TAGLINE="Dynamic Explorations into the Euclidean Algorithm",
+        APP_TAGLINE="Instrument-Lab Explorations into Euclid, Ratios, and Rhythm",
         AIX_HUB_URL=os.getenv("AIX_HUB_URL", "/"),
     )
     if config:
         app.config.update(config)
 
-    from euclidorithm.euclidyne_web.blueprints.api import api_bp
-    from euclidorithm.euclidyne_web.blueprints.main import main_bp
+    from euclidyne.euclidyne_web.blueprints.api import api_bp
+    from euclidyne.euclidyne_web.blueprints.main import main_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp)
@@ -49,10 +51,10 @@ def create_app(config: dict | None = None) -> Flask:
             "app_tagline": str(
                 app.config.get(
                     "APP_TAGLINE",
-                    "Dynamic Explorations into the Euclidean Algorithm",
+                    "Instrument-Lab Explorations into Euclid, Ratios, and Rhythm",
                 )
             ),
+            "top_nav_labs": top_nav_labs(),
         }
 
     return app
-

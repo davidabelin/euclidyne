@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% from "partials/lab_shell.html" import lab_meta, status_badges %}
+
+{% block title %}{{ page.lab.title }}{% endblock %}
+
+{% block content %}
+<section class="lab-layout">
+  <div class="main-column">
+    <section class="panel card">
+      <p class="eyebrow">Applications and Reality Checks</p>
+      <h1>{{ page.lab.title }}</h1>
+      <p class="lede">{{ page.lab.subtitle }}</p>
+      <form method="get" class="form-row">
+        <label class="field">a
+          <input name="a" type="number" min="1" step="1" required value="{{ page.inputs.a }}">
+        </label>
+        <label class="field">m
+          <input name="m" type="number" min="2" step="1" required value="{{ page.inputs.m }}">
+        </label>
+        <button class="btn" type="submit">Try Key</button>
+      </form>
+      {{ status_badges(page.claims) }}
+    </section>
+
+    {% if page.model %}
+      <section class="lab-grid">
+        <article class="panel card">
+          <div class="stat-grid compact">
+            <article class="stat-card">
+              <p class="label">gcd(a, m)</p>
+              <p class="value">{{ page.model.gcd }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Inverse</p>
+              <p class="value mono">
+                {% if page.model.inverse is not none %}
+                  {{ page.model.inverse }}
+                {% else %}
+                  none
+                {% endif %}
+              </p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Locked?</p>
+              <p class="value">{{ "yes" if page.model.locked else "no" }}</p>
+            </article>
+          </div>
+          <div class="callout mono">{{ page.model.bezout.identity }}</div>
+        </article>
+      </section>
+    {% endif %}
+  </div>
+
+  {{ lab_meta(page) }}
+</section>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% from "partials/lab_shell.html" import lab_meta, swap_notice, status_badges %}
+
+{% block title %}{{ page.lab.title }}{% endblock %}
+
+{% block content %}
+<section class="lab-layout">
+  <div class="main-column">
+    <section class="panel card">
+      <p class="eyebrow">Ratios and Geometry</p>
+      <h1>{{ page.lab.title }}</h1>
+      <p class="lede">{{ page.lab.subtitle }}</p>
+      <form method="get" class="form-row">
+        <label class="field">Input a
+          <input name="a" type="number" min="1" step="1" required value="{{ page.inputs.a }}">
+        </label>
+        <label class="field">Input b
+          <input name="b" type="number" min="1" step="1" required value="{{ page.inputs.b }}">
+        </label>
+        <button class="btn" type="submit">Build Geometry</button>
+      </form>
+      {{ swap_notice(page) }}
+      {{ status_badges(page.claims) }}
+    </section>
+
+    {% if page.model %}
+      <script id="page-model" type="application/json">{{ page | tojson }}</script>
+
+      <section class="lab-grid">
+        <article class="panel card">
+          <div class="control-row">
+            <button id="rectPrev" class="btn secondary" type="button">Back</button>
+            <button id="rectNext" class="btn" type="button">Next</button>
+            <button id="rectToggleArcs" class="btn secondary" type="button">
+              {% if page.model.geometry.golden_special.enabled %}Show Arcs{% else %}Golden Only{% endif %}
+            </button>
+            <span id="rectStageLabel" class="status-badge verified"></span>
+          </div>
+          <div class="stepper">
+            <input id="rectRange" type="range" min="1" max="{{ page.model.geometry.stages|length }}" value="{{ page.model.geometry.stages|length }}">
+          </div>
+          <div class="svg-shell tall">
+            <svg id="rectGeometry" viewBox="0 0 720 460" aria-label="Rectangle dissection"></svg>
+          </div>
+          <div id="rectStageInfo" class="callout"></div>
+        </article>
+
+        <article class="panel card">
+          <div class="stat-grid compact">
+            <article class="stat-card">
+              <p class="label">Ratio</p>
+              <p class="value mono">{{ page.model.input.ratio.numerator }}/{{ page.model.input.ratio.denominator }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">CF</p>
+              <p class="value mono">{{ page.model.continued_fraction.notation }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Golden Case</p>
+              <p class="value">{{ page.model.geometry.golden_special.label }}</p>
+            </article>
+          </div>
+          <div class="callout">{{ page.model.geometry.notes.arc_overlay }}</div>
+        </article>
+      </section>
+
+      <section class="panel table-panel">
+        <h2>Convergents</h2>
+        <div class="table-shell">
+          <table class="data-table" id="rectConvergentTable">
+            <thead>
+              <tr>
+                <th>i</th>
+                <th>q_i</th>
+                <th>p_i / q_i</th>
+                <th>decimal</th>
+                <th>error</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for convergent in page.model.geometry.continued_fraction.convergents %}
+                <tr>
+                  <td>{{ convergent.index }}</td>
+                  <td>{{ convergent.quotient }}</td>
+                  <td class="mono">{{ convergent.numerator }}/{{ convergent.denominator }}</td>
+                  <td>{{ convergent.decimal }}</td>
+                  <td>{{ convergent.error_decimal }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% endif %}
+  </div>
+
+  {{ lab_meta(page) }}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {% if page.model %}
+    <script type="module" src="{{ url_for('static', filename='js/labs/rectangle-reactor.js') }}"></script>
+  {% endif %}
+{% endblock %}

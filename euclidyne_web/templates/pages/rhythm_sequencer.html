@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "partials/lab_shell.html" import lab_meta, status_badges %}
+
+{% block title %}{{ page.lab.title }}{% endblock %}
+
+{% block content %}
+<section class="lab-layout">
+  <div class="main-column">
+    <section class="panel card">
+      <p class="eyebrow">Applications and Reality Checks</p>
+      <h1>{{ page.lab.title }}</h1>
+      <p class="lede">{{ page.lab.subtitle }}</p>
+      <form method="get" class="form-row">
+        <label class="field">Steps
+          <input name="steps" type="number" min="2" max="32" step="1" required value="{{ page.inputs.steps }}">
+        </label>
+        <label class="field">Pulses
+          <input name="pulses" type="number" min="1" max="{{ page.inputs.steps }}" step="1" required value="{{ page.inputs.pulses }}">
+        </label>
+        <label class="field">Rotation
+          <input name="rotation" type="number" min="0" max="{{ page.inputs.steps - 1 }}" step="1" required value="{{ page.inputs.rotation }}">
+        </label>
+        <label class="field">BPM
+          <input name="bpm" type="number" min="40" max="220" step="1" required value="{{ page.inputs.bpm }}">
+        </label>
+        <button class="btn" type="submit">Build Pattern</button>
+      </form>
+      {{ status_badges(page.claims) }}
+    </section>
+
+    {% if page.model %}
+      <script src="{{ url_for('static', filename='vendor/tone/tone-14.7.39.js') }}"></script>
+      <script id="page-model" type="application/json">{{ page | tojson }}</script>
+      <section class="lab-grid">
+        <article class="panel card">
+          <div class="control-row">
+            <button id="rhythmPlay" class="btn" type="button">Play</button>
+            <button id="rhythmStop" class="btn secondary" type="button">Stop</button>
+            <span class="status-badge verified">{{ page.model.notation }}</span>
+          </div>
+          <div class="svg-shell">
+            <svg id="rhythmSvg" viewBox="0 0 720 360" aria-label="Euclidean rhythm wheel"></svg>
+          </div>
+          <div class="callout">Pattern {{ page.model.hit_count }} hits and {{ page.model.rest_count }} rests in one cycle.</div>
+        </article>
+      </section>
+    {% endif %}
+  </div>
+
+  {{ lab_meta(page) }}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {% if page.model %}
+    <script type="module" src="{{ url_for('static', filename='js/labs/rhythm-sequencer.js') }}"></script>
+  {% endif %}
+{% endblock %}

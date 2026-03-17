@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% from "partials/lab_shell.html" import lab_meta, swap_notice, status_badges %}
+
+{% block title %}{{ page.lab.title }}{% endblock %}
+
+{% block content %}
+<section class="lab-layout">
+  <div class="main-column">
+    <section class="panel card">
+      <p class="eyebrow">Core Algorithm</p>
+      <h1>{{ page.lab.title }}</h1>
+      <p class="lede">{{ page.lab.subtitle }}</p>
+      <form method="get" class="form-row">
+        <label class="field">Input a
+          <input name="a" type="number" min="1" step="1" required value="{{ page.inputs.a }}">
+        </label>
+        <label class="field">Input b
+          <input name="b" type="number" min="1" step="1" required value="{{ page.inputs.b }}">
+        </label>
+        <button class="btn" type="submit">Compare</button>
+      </form>
+      {{ swap_notice(page) }}
+      {{ status_badges(page.claims) }}
+    </section>
+
+    {% if page.model %}
+      <section class="lab-grid">
+        <article class="panel card">
+          <h2>Standard Euclid</h2>
+          <div class="stat-grid compact">
+            <article class="stat-card">
+              <p class="label">Steps</p>
+              <p class="value">{{ page.model.standard.step_count }}</p>
+            </article>
+          </div>
+          <div class="table-shell">
+            <table class="data-table">
+              <thead>
+                <tr><th>step</th><th>A</th><th>B</th><th>q</th><th>r</th></tr>
+              </thead>
+              <tbody>
+                {% for step in page.model.standard.steps %}
+                  <tr>
+                    <td>{{ step.index }}</td>
+                    <td>{{ step.dividend }}</td>
+                    <td>{{ step.divisor }}</td>
+                    <td>{{ step.quotient }}</td>
+                    <td>{{ step.remainder }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel card">
+          <h2>Centered Variant</h2>
+          <div class="stat-grid compact">
+            <article class="stat-card">
+              <p class="label">Steps</p>
+              <p class="value">{{ page.model.centered.step_count }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Saved</p>
+              <p class="value">{{ page.model.comparison.saved_steps }}</p>
+            </article>
+          </div>
+          <div class="table-shell">
+            <table class="data-table">
+              <thead>
+                <tr><th>step</th><th>A</th><th>B</th><th>q</th><th>r</th><th>|next|</th></tr>
+              </thead>
+              <tbody>
+                {% for step in page.model.centered.steps %}
+                  <tr>
+                    <td>{{ step.index }}</td>
+                    <td>{{ step.dividend }}</td>
+                    <td>{{ step.divisor }}</td>
+                    <td>{{ step.quotient }}</td>
+                    <td>{{ step.remainder }}</td>
+                    <td>{{ step.next_divisor }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    {% endif %}
+  </div>
+
+  {{ lab_meta(page) }}
+</section>
+{% endblock %}

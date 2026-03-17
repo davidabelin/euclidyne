@@ -6,10 +6,13 @@
     <title>{% block title %}{{ app_display_name }}{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Baskervville:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Baskervville:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/katex/katex-0.16.38.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/atlas.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/labs.css') }}">
     {% block extra_head %}{% endblock %}
   </head>
@@ -23,10 +26,9 @@
       </div>
       <nav class="site-nav" aria-label="Main navigation">
         <a href="{{ url_for('main.home') }}" class="{% if active == 'home' %}active{% endif %}">Home</a>
-        <a href="{{ url_for('main.quick') }}" class="{% if active == 'quick' %}active{% endif %}">Quick</a>
-        <a href="{{ url_for('main.explorer') }}" class="{% if active == 'explorer' %}active{% endif %}">Explorer</a>
-        <a href="{{ url_for('main.continued_fractions') }}" class="{% if active == 'continued_fractions' %}active{% endif %}">CF + Geometry</a>
-        <a href="{{ url_for('main.phase') }}" class="{% if active == 'phase' %}active{% endif %}">Phase Lab</a>
+        <a href="{{ url_for('main.quick') }}" class="{% if active == 'quick-calculator' %}active{% endif %}">Quick Calculator</a>
+        <a href="{{ url_for('main.explorer') }}" class="{% if active == 'algorithm-explorer' %}active{% endif %}">Algorithm Explorer</a>
+        <a href="{{ url_for('main.atlas') }}" class="{% if active == 'atlas' %}active{% endif %}">Atlas</a>
         <a href="{{ url_for('main.references') }}" class="{% if active == 'references' %}active{% endif %}">References</a>
         <a href="{{ aix_hub_url }}">Back to AIX Hub</a>
       </nav>
@@ -47,7 +49,9 @@
       </div>
     </footer>
 
+    <script defer src="{{ url_for('static', filename='vendor/katex/katex-0.16.38.min.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='vendor/katex/auto-render-0.16.38.min.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/common.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>
-

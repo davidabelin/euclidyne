@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% from "partials/lab_shell.html" import lab_meta, swap_notice, status_badges %}
+
+{% block title %}{{ page.lab.title }}{% endblock %}
+
+{% block content %}
+<section class="lab-layout">
+  <div class="main-column">
+    <section class="panel card">
+      <p class="eyebrow">Core Algorithm</p>
+      <h1>{{ page.lab.title }}</h1>
+      <p class="lede">{{ page.lab.subtitle }}</p>
+      <form method="get" class="form-row">
+        <label class="field">Input a
+          <input name="a" type="number" min="1" step="1" required value="{{ page.inputs.a }}">
+        </label>
+        <label class="field">Input b
+          <input name="b" type="number" min="1" step="1" required value="{{ page.inputs.b }}">
+        </label>
+        <button class="btn" type="submit">Explore</button>
+      </form>
+      {{ swap_notice(page) }}
+      {{ status_badges(page.claims) }}
+    </section>
+
+    {% if page.model %}
+      <script id="page-model" type="application/json">{{ page | tojson }}</script>
+
+      <section class="lab-grid">
+        <article class="panel card">
+          <div class="control-row">
+            <button id="explorerPrev" class="btn secondary" type="button">Back</button>
+            <button id="explorerNext" class="btn" type="button">Next</button>
+            <button id="explorerPlay" class="btn secondary" type="button">Play</button>
+            <span id="explorerStepLabel" class="status-badge verified"></span>
+          </div>
+          <div class="stepper">
+            <input id="explorerRange" type="range" min="0" max="{{ page.model.steps|length }}" value="0">
+          </div>
+          <div class="svg-shell">
+            <svg id="explorerBars" viewBox="0 0 720 280" aria-label="Current Euclidean step bars"></svg>
+          </div>
+          <div id="explorerEquation" class="callout mono"></div>
+          <div id="phaseCallout" class="callout">{{ page.model.phase.summary }}</div>
+        </article>
+
+        <article class="panel card">
+          <div class="stat-grid compact">
+            <article class="stat-card">
+              <p class="label">GCD</p>
+              <p class="value">{{ page.model.gcd }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Steps</p>
+              <p class="value">{{ page.model.step_count }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">CF</p>
+              <p class="value mono">{{ page.model.continued_fraction.notation }}</p>
+            </article>
+          </div>
+          <div id="explorerExplanation" class="callout"></div>
+          <div id="explorerIdentity" class="callout mono"></div>
+        </article>
+      </section>
+
+      <section class="panel table-panel">
+        <h2>Division Steps</h2>
+        <div class="table-shell">
+          <table class="data-table" id="explorerStepTable">
+            <thead>
+              <tr>
+                <th>step</th>
+                <th>A</th>
+                <th>B</th>
+                <th>q</th>
+                <th>r</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for step in page.model.steps %}
+                <tr data-step="{{ step.index }}">
+                  <td>{{ step.index }}</td>
+                  <td>{{ step.dividend }}</td>
+                  <td>{{ step.divisor }}</td>
+                  <td>{{ step.quotient }}</td>
+                  <td>{{ step.remainder }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel table-panel">
+        <h2>Extended Euclid Rows</h2>
+        <div class="table-shell">
+          <table class="data-table" id="explorerRowTable">
+            <thead>
+              <tr>
+                <th>i</th>
+                <th>q</th>
+                <th>r</th>
+                <th>r recurrence</th>
+                <th>s</th>
+                <th>t</th>
+                <th>identity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in page.model.rows %}
+                <tr data-row="{{ row.index }}" class="{% if row.is_gcd_row %}row-gcd{% elif row.is_stop_row %}row-stop{% endif %}">
+                  <td>{{ row.index }}</td>
+                  <td>{% if row.quotient is not none %}{{ row.quotient }}{% endif %}</td>
+                  <td>{{ row.remainder }}</td>
+                  <td>{% if row.remainder_expression %}{{ row.remainder_expression }}{% endif %}</td>
+                  <td>{{ row.s }}</td>
+                  <td>{{ row.t }}</td>
+                  <td class="mono">{{ row.identity }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% endif %}
+  </div>
+
+  {{ lab_meta(page) }}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {% if page.model %}
+    <script type="module" src="{{ url_for('static', filename='js/labs/algorithm-explorer.js') }}"></script>
+  {% endif %}
+{% endblock %}

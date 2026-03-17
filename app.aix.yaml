@@ -1,6 +1,6 @@
 runtime: python314
 service: euclidyne
-entrypoint: gunicorn --worker-tmp-dir /tmp -b :$PORT euclidorithm.euclidyne:app
+entrypoint: gunicorn --worker-tmp-dir /tmp -b :$PORT euclidyne.euclidyne:app
 
 env_variables:
   APP_BASE_PATH: /euclidyne

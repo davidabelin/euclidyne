@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from euclidorithm.euclidyne_web import create_app
+from euclidyne.euclidyne_web import create_app
 
 
 app = create_app()
@@ -35,4 +35,3 @@ if base_path:
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5002, debug=True)
-

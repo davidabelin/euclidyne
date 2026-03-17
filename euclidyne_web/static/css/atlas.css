@@ -1,0 +1,31 @@
+.atlas-hero {
+  padding: clamp(1.25rem, 3vw, 1.85rem);
+}
+
+.atlas-group {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.atlas-heading {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.atlas-card p {
+  min-height: 4.8rem;
+}
+
+.atlas-fact {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.85rem;
+}
+
+.atlas-fact p {
+  margin: 0.2rem 0 0;
+}

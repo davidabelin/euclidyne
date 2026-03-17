@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "partials/lab_shell.html" import lab_meta, swap_notice, status_badges %}
+
+{% block title %}{{ page.lab.title }}{% endblock %}
+
+{% block content %}
+<section class="lab-layout">
+  <div class="main-column">
+    <section class="panel card">
+      <p class="eyebrow">Core Algorithm</p>
+      <h1>{{ page.lab.title }}</h1>
+      <p class="lede">{{ page.lab.subtitle }}</p>
+      <form method="get" class="form-row">
+        <label class="field">Input a
+          <input name="a" type="number" min="1" step="1" required value="{{ page.inputs.a }}">
+        </label>
+        <label class="field">Input b
+          <input name="b" type="number" min="1" step="1" required value="{{ page.inputs.b }}">
+        </label>
+        <button class="btn" type="submit">Compute</button>
+      </form>
+      {{ swap_notice(page) }}
+      {{ status_badges(page.claims) }}
+    </section>
+
+    {% if page.model %}
+      <section class="panel card">
+        <div class="output-shell">
+          {% for step in page.model.steps %}
+            <div class="equation-line mono">
+              <span style="color: {{ step.color }};">{{ step.dividend }}</span>
+              = {{ step.divisor }} * <span class="accent-text">{{ step.quotient }}</span> + {{ step.remainder }}
+            </div>
+          {% endfor %}
+        </div>
+        <div class="stat-grid">
+          <article class="stat-card">
+            <p class="label">GCD</p>
+            <p class="value">{{ page.model.gcd }}</p>
+          </article>
+          <article class="stat-card">
+            <p class="label">Steps</p>
+            <p class="value">{{ page.model.step_count }}</p>
+          </article>
+          <article class="stat-card">
+            <p class="label">Bezout</p>
+            <p class="value mono">{{ page.model.bezout.identity }}</p>
+          </article>
+          <article class="stat-card">
+            <p class="label">Inverse mod b</p>
+            <p class="value mono">
+              {% if page.model.bezout.inverse_mod_b is not none %}
+                {{ page.model.bezout.inverse_mod_b }}
+              {% else %}
+                none
+              {% endif %}
+            </p>
+          </article>
+        </div>
+      </section>
+    {% endif %}
+  </div>
+
+  {{ lab_meta(page) }}
+</section>
+{% endblock %}

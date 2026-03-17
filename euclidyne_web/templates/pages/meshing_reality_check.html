@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "partials/lab_shell.html" import lab_meta, status_badges %}
+
+{% block title %}{{ page.lab.title }}{% endblock %}
+
+{% block content %}
+<section class="lab-layout">
+  <div class="main-column">
+    <section class="panel card">
+      <p class="eyebrow">Applications and Reality Checks</p>
+      <h1>{{ page.lab.title }}</h1>
+      <p class="lede">{{ page.lab.subtitle }}</p>
+      <form method="get" class="form-row">
+        <label class="field">Driver teeth
+          <input name="driver_teeth" type="number" min="8" max="120" step="1" required value="{{ page.inputs.driver_teeth }}">
+        </label>
+        <label class="field">Follower teeth
+          <input name="follower_teeth" type="number" min="8" max="120" step="1" required value="{{ page.inputs.follower_teeth }}">
+        </label>
+        <label class="field">Center scale
+          <input name="center_scale" type="number" min="0.96" max="1.15" step="0.01" required value="{{ page.inputs.center_scale }}">
+        </label>
+        <button class="btn" type="submit">Re-mesh</button>
+      </form>
+      {{ status_badges(page.claims) }}
+    </section>
+
+    {% if page.model %}
+      <script id="page-model" type="application/json">{{ page | tojson }}</script>
+      <section class="lab-grid">
+        <article class="panel card">
+          <div class="stat-grid compact">
+            <article class="stat-card">
+              <p class="label">Ratio</p>
+              <p class="value mono">{{ page.model.ratio.numerator }}/{{ page.model.ratio.denominator }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">State</p>
+              <p class="value">{{ page.model.state }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Working Pressure Angle</p>
+              <p class="value">{{ page.model.pressure_angle.working_deg }} deg</p>
+            </article>
+          </div>
+          <div class="svg-shell">
+            <svg id="meshingSvg" viewBox="0 0 720 360" aria-label="Meshing gears"></svg>
+          </div>
+          <div class="callout">{{ page.model.notes.ratio_constant }}</div>
+          <div class="callout">{{ page.model.notes.contact_warning }}</div>
+        </article>
+      </section>
+    {% endif %}
+  </div>
+
+  {{ lab_meta(page) }}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+  {% if page.model %}
+    <script type="module" src="{{ url_for('static', filename='js/labs/meshing-reality-check.js') }}"></script>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "partials/lab_shell.html" import lab_meta, status_badges %}
+
+{% block title %}{{ page.lab.title }}{% endblock %}
+
+{% block content %}
+<section class="lab-layout">
+  <div class="main-column">
+    <section class="panel card">
+      <p class="eyebrow">Ratios and Geometry</p>
+      <h1>{{ page.lab.title }}</h1>
+      <p class="lede">{{ page.lab.subtitle }}</p>
+      <form method="get" class="form-row">
+        <label class="field">n
+          <input name="n" type="number" min="2" step="1" required value="{{ page.inputs.n }}">
+        </label>
+        <label class="field">Terms
+          <input name="terms" type="number" min="6" max="32" step="1" required value="{{ page.inputs.terms }}">
+        </label>
+        <button class="btn" type="submit">Build Loop</button>
+      </form>
+      {{ status_badges(page.claims) }}
+    </section>
+
+    {% if page.model %}
+      <script id="page-model" type="application/json">{{ page | tojson }}</script>
+      <section class="lab-grid">
+        <article class="panel card">
+          <div class="callout mono">{{ page.model.notation }}</div>
+          <div class="stat-grid compact">
+            <article class="stat-card">
+              <p class="label">a0</p>
+              <p class="value">{{ page.model.a0 }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Period</p>
+              <p class="value">{{ page.model.period_length }}</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Pell Hint</p>
+              <p class="value mono">
+                {% if page.model.pell_hint %}
+                  {{ page.model.pell_hint.x }}, {{ page.model.pell_hint.y }}
+                {% else %}
+                  pending
+                {% endif %}
+              </p>
+            </article>
+          </div>
+          <div class="table-shell">
+            <table class="data-table">
+              <thead>
+                <tr><th>i</th><th>a_i</th><th>p_i / q_i</th><th>decimal</th></tr>
+              </thead>
+              <tbody>
+                {% for convergent in page.model.convergents %}
+                  <tr>
+                    <td>{{ convergent.index }}</td>
+                    <td>{{ convergent.term }}</td>
+                    <td class="mono">{{ convergent.numerator }}/{{ convergent.denominator }}</td>
+                    <td>{{ convergent.decimal }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    {% endif %}
+  </div>
+
+  {{ lab_meta(page) }}
+</section>
+{% endblock %}
