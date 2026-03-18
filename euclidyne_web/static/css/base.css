@@ -122,6 +122,13 @@ a {
   margin: 0;
   color: var(--muted);
   font-size: 0.84rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.copyleft-mark {
+  line-height: 1;
 }
 
 .footer-links {
@@ -144,4 +151,3 @@ a {
     flex-direction: column;
   }
 }
-

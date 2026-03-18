@@ -60,6 +60,14 @@ def test_invalid_lab_inputs_render_error_state_instead_of_500(client):
     assert b"Use an integer value for a." in response.data
 
 
+def test_aix_chrome_uses_updated_label_and_copyleft_marker(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b"AIX Labs" in response.data
+    assert b"&#x1F12F;" in response.data
+    assert b"2026 AIX Protodyne" in response.data
+
+
 def test_legacy_routes_redirect_to_new_pages(client):
     cases = [
         ("/table?a=240&b=46", "/explorer?a=240&b=46"),
