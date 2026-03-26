@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 
-from euclidyne.euclidyne_web.facts import primary_fact
+from .facts import primary_fact
 
 
 @dataclass(frozen=True)

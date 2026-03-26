@@ -4,7 +4,7 @@ from typing import Any
 
 from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 
-from euclidyne.euclidyne_web.page_builders import (
+from ..page_builders import (
     build_home_page,
     build_lab_page,
     build_references_page,

@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from flask import Flask
 
-from euclidyne.euclidyne_web.lab_registry import top_nav_labs
+from .lab_registry import top_nav_labs
 
 
 def _normalize_base_url(value: str) -> str:
@@ -33,8 +33,8 @@ def create_app(config: dict | None = None) -> Flask:
     if config:
         app.config.update(config)
 
-    from euclidyne.euclidyne_web.blueprints.api import api_bp
-    from euclidyne.euclidyne_web.blueprints.main import main_bp
+    from .blueprints.api import api_bp
+    from .blueprints.main import main_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp)

@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import random
 
-from euclidyne.euclidyne_web.mathcore import (
+from euclidyne_web.mathcore import (
     build_centered_euclid_model,
     build_euclid_model,
     build_fibonacci_comparison,

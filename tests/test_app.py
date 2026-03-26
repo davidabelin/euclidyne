@@ -4,7 +4,7 @@ from urllib.parse import parse_qs, urlencode, urlsplit
 
 import pytest
 
-from euclidyne.euclidyne_web.lab_registry import LAB_ENTRIES
+from euclidyne_web.lab_registry import LAB_ENTRIES
 
 
 def test_primary_pages_load(client):

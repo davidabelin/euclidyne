@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from euclidyne.euclidyne_web.claims import claim_status_counts, list_claims
-from euclidyne.euclidyne_web.facts import FACTS, facts_for_lab
-from euclidyne.euclidyne_web.lab_registry import atlas_groups, get_lab, related_labs
-from euclidyne.euclidyne_web.mathcore import (
+from .claims import claim_status_counts, list_claims
+from .facts import FACTS, facts_for_lab
+from .lab_registry import atlas_groups, get_lab, related_labs
+from .mathcore import (
     build_centered_euclid_model,
     build_euclid_model,
     build_fibonacci_comparison,
@@ -18,8 +18,8 @@ from euclidyne.euclidyne_web.mathcore import (
     build_rectangle_model,
     build_rhythm_model,
 )
-from euclidyne.euclidyne_web.mathcore.euclid import extended_gcd
-from euclidyne.euclidyne_web.sources import gather_sources, list_sources
+from .mathcore.euclid import extended_gcd
+from .sources import gather_sources, list_sources
 
 
 def _read_int(

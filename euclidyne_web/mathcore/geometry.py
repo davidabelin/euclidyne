@@ -7,8 +7,8 @@ from fractions import Fraction
 from math import gcd
 from typing import Any
 
-from euclidyne.euclidyne_web.mathcore.common import to_payload
-from euclidyne.euclidyne_web.mathcore.euclid import (
+from .common import to_payload
+from .euclid import (
     STEP_COLORS,
     build_convergents,
     build_division_steps,

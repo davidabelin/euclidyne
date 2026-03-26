@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from euclidyne.euclidyne_web import create_app
+from euclidyne_web import create_app
 
 
 app = create_app()

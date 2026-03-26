@@ -5,7 +5,7 @@ This file is retained only as an archival reference.
 
 Current runtime
 ---------------
-The active Flask app now lives in ``euclidyne.euclidyne:app``.
+The active Flask app now lives in ``euclidyne:app``.
 
 Archive scope
 -------------

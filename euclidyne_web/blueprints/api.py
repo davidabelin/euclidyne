@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from flask import Blueprint, jsonify, request
 
-from euclidyne.euclidyne_web.content import explanation_meta
-from euclidyne.euclidyne_web.page_builders import build_lab_page
+from ..content import explanation_meta
+from ..page_builders import build_lab_page
 
 
 api_bp = Blueprint("api", __name__)

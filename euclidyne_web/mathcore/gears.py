@@ -6,8 +6,8 @@ from fractions import Fraction
 from math import acos, cos, degrees, radians
 from typing import Any
 
-from euclidyne.euclidyne_web.mathcore.common import continued_fraction_notation, fraction_payload
-from euclidyne.euclidyne_web.mathcore.euclid import build_convergents, build_phase_subpanel
+from .common import continued_fraction_notation, fraction_payload
+from .euclid import build_convergents, build_phase_subpanel
 
 
 def _continued_fraction_for_fraction(value: Fraction) -> list[int]:

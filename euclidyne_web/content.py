@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from euclidyne.euclidyne_web.claims import claim_status_counts, list_claims
-from euclidyne.euclidyne_web.sources import list_sources
+from .claims import claim_status_counts, list_claims
+from .sources import list_sources
 
 
 AUDIT_NOTES: list[str] = [

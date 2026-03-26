@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from euclidyne.euclidyne_web.claims import CLAIMS
-from euclidyne.euclidyne_web.facts import FACTS
-from euclidyne.euclidyne_web.lab_registry import LAB_ENTRIES, LAB_GROUPS
-from euclidyne.euclidyne_web.page_builders import build_home_page, build_references_page
-from euclidyne.euclidyne_web.sources import SOURCE_ENTRIES
+from euclidyne_web.claims import CLAIMS
+from euclidyne_web.facts import FACTS
+from euclidyne_web.lab_registry import LAB_ENTRIES, LAB_GROUPS
+from euclidyne_web.page_builders import build_home_page, build_references_page
+from euclidyne_web.sources import SOURCE_ENTRIES
 
 
 def test_lab_registry_references_known_claims_sources_and_related_labs():

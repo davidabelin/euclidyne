@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 from typing import Any
 
-from euclidyne.euclidyne_web.mathcore.common import (
+from .common import (
     continued_fraction_notation,
     fraction_payload,
     to_payload,

@@ -6,7 +6,7 @@ from fractions import Fraction
 from math import isqrt
 from typing import Any
 
-from euclidyne.euclidyne_web.mathcore.common import is_perfect_square
+from .common import is_perfect_square
 
 
 def _convergents(terms: list[int]) -> list[dict[str, Any]]:
