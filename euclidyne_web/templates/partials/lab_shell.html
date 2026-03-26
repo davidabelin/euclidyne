@@ -45,7 +45,7 @@
       <h2>Continue Exploring</h2>
       <ul class="plain-list">
         {% for item in page.related_labs %}
-          <li><a href="{{ item.route }}">{{ item.title }}</a></li>
+          <li><a href="{{ request.script_root }}{{ item.route }}">{{ item.title }}</a></li>
         {% endfor %}
       </ul>
     </article>

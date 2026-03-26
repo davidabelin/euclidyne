@@ -50,7 +50,7 @@
           <h2>{{ lab.title }}</h2>
           <p>{{ lab.summary }}</p>
           <div class="button-row">
-            <a class="btn" href="{{ lab.route }}">Open Lab</a>
+            <a class="btn" href="{{ request.script_root }}{{ lab.route }}">Open Lab</a>
           </div>
         </article>
       {% endfor %}
