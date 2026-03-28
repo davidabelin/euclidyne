@@ -11,6 +11,8 @@ from .euclid import build_convergents, build_phase_subpanel
 
 
 def _continued_fraction_for_fraction(value: Fraction) -> list[int]:
+    """Expand one rational target into its continued-fraction quotients."""
+
     quotients: list[int] = []
     numerator = value.numerator
     denominator = value.denominator
@@ -22,6 +24,8 @@ def _continued_fraction_for_fraction(value: Fraction) -> list[int]:
 
 
 def _prime_factors(value: int) -> list[int]:
+    """Return the prime factor multiset for one positive integer."""
+
     factors: list[int] = []
     candidate = 2
     remainder = value
@@ -36,6 +40,8 @@ def _prime_factors(value: int) -> list[int]:
 
 
 def _pack_factors(factors: list[int], max_groups: int, max_value: int) -> list[int] | None:
+    """Greedily pack prime factors into bounded stage tooth counts."""
+
     groups: list[int] = [1]
     for factor in sorted(factors, reverse=True):
         placed = False
@@ -53,6 +59,8 @@ def _pack_factors(factors: list[int], max_groups: int, max_value: int) -> list[i
 
 
 def _simple_candidates(target: Fraction, max_teeth: int) -> list[dict[str, Any]]:
+    """Enumerate bounded single-stage gear candidates for a target ratio."""
+
     candidates: list[dict[str, Any]] = []
     for driver_teeth in range(1, max_teeth + 1):
         for follower_teeth in range(1, max_teeth + 1):
@@ -80,6 +88,8 @@ def _simple_candidates(target: Fraction, max_teeth: int) -> list[dict[str, Any]]
 
 
 def _compound_candidate(target: Fraction, max_teeth: int, stages: int) -> dict[str, Any] | None:
+    """Build one exact multi-stage candidate when factor packing allows it."""
+
     numerator_factors = _prime_factors(target.numerator)
     denominator_factors = _prime_factors(target.denominator)
     packed_numerator = _pack_factors(numerator_factors, stages, max_teeth)

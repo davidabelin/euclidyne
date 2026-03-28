@@ -30,6 +30,8 @@ def _read_int(
     minimum: int | None = None,
     maximum: int | None = None,
 ) -> int:
+    """Parse one integer input and enforce optional numeric bounds."""
+
     raw = str(values.get(name, default)).strip()
     try:
         value = int(raw)
@@ -50,6 +52,8 @@ def _read_float(
     minimum: float | None = None,
     maximum: float | None = None,
 ) -> float:
+    """Parse one floating-point input and enforce optional numeric bounds."""
+
     raw = str(values.get(name, default)).strip()
     try:
         value = float(raw)
@@ -63,6 +67,8 @@ def _read_float(
 
 
 def _assemble_page(slug: str, inputs: dict[str, object], model: dict[str, Any] | None, ui: dict[str, Any]) -> dict[str, Any]:
+    """Assemble the shared page payload used by HTML and JSON views."""
+
     lab = get_lab(slug)
     claims = list_claims(slug)
     facts = facts_for_lab(slug)
@@ -84,6 +90,8 @@ def _assemble_page(slug: str, inputs: dict[str, object], model: dict[str, Any] |
 
 
 def _build_euclid_page(slug: str, values: Mapping[str, object], *, include_geometry: bool = False, include_fibonacci: bool = False) -> dict[str, Any]:
+    """Build one Euclid-family page payload with shared validation rules."""
+
     lab = get_lab(slug)
     default_inputs = lab["default_inputs"]
     a = _read_int(values, "a", int(default_inputs["a"]), minimum=1)
@@ -104,7 +112,7 @@ def _build_euclid_page(slug: str, values: Mapping[str, object], *, include_geome
 
 
 def build_lab_page(slug: str, values: Mapping[str, object]) -> dict[str, Any]:
-    """Build a fully-populated lab page payload."""
+    """Build a fully populated page payload for one Euclidyne lab."""
 
     if slug == "quick-calculator":
         return _build_euclid_page(slug, values)

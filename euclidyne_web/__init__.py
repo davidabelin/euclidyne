@@ -11,11 +11,15 @@ from .lab_registry import top_nav_labs
 
 
 def _normalize_base_url(value: str) -> str:
+    """Normalize the configured AIX hub base URL for footer/navigation links."""
+
     raw = str(value or "").strip()
     return raw or "/"
 
 
 def _aix_page_url(base_url: str, path: str) -> str:
+    """Build one AIX-owned page URL from the configured hub base URL."""
+
     base = _normalize_base_url(base_url)
     if base == "/":
         return path
@@ -23,6 +27,8 @@ def _aix_page_url(base_url: str, path: str) -> str:
 
 
 def create_app(config: dict | None = None) -> Flask:
+    """Create the standalone Euclidyne Flask application."""
+
     app = Flask(__name__, template_folder="templates", static_folder="static")
     app.config.from_mapping(
         SECRET_KEY=os.getenv("FLASK_SECRET_KEY", "euclidyne-dev-key"),
@@ -41,6 +47,8 @@ def create_app(config: dict | None = None) -> Flask:
 
     @app.context_processor
     def inject_template_globals() -> dict:
+        """Expose AIX navigation URLs and Euclidyne nav metadata."""
+
         hub_url = _normalize_base_url(app.config.get("AIX_HUB_URL", "/"))
         return {
             "aix_hub_url": hub_url,

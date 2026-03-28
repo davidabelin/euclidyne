@@ -1,3 +1,5 @@
+"""JSON API routes for Euclidyne lab payloads."""
+
 from __future__ import annotations
 
 from flask import Blueprint, jsonify, request
@@ -10,6 +12,8 @@ api_bp = Blueprint("api", __name__)
 
 
 def _payload(slug: str, *, status_on_error: int = 400):
+    """Build one API payload for the requested lab slug."""
+
     try:
         page = build_lab_page(slug, request.args)
     except ValueError as exc:
@@ -32,44 +36,62 @@ def _payload(slug: str, *, status_on_error: int = 400):
 
 @api_bp.get("/api/v1/euclid")
 def euclid_api_v1():
+    """Return the legacy v1 Euclid payload shape."""
+
     return _payload("algorithm-explorer")
 
 
 @api_bp.get("/api/v2/euclid")
 def euclid_api_v2():
+    """Return the v2 Euclid payload shape."""
+
     return _payload("algorithm-explorer")
 
 
 @api_bp.get("/api/v2/centered-euclid")
 def centered_euclid_api():
+    """Return the centered Euclid lab payload."""
+
     return _payload("centered-euclid-race")
 
 
 @api_bp.get("/api/v2/gear-ratio")
 def gear_ratio_api():
+    """Return the gear-ratio lab payload."""
+
     return _payload("gear-ratio-forge")
 
 
 @api_bp.get("/api/v2/rational-sky")
 def rational_sky_api():
+    """Return the rational-sky lab payload."""
+
     return _payload("rational-sky")
 
 
 @api_bp.get("/api/v2/modular-lock")
 def modular_lock_api():
+    """Return the modular-lock lab payload."""
+
     return _payload("modular-lock-lab")
 
 
 @api_bp.get("/api/v2/rhythm")
 def rhythm_api():
+    """Return the rhythm-sequencer lab payload."""
+
     return _payload("rhythm-sequencer")
 
 
 @api_bp.get("/api/v2/meshing")
 def meshing_api():
+    """Return the meshing-reality-check lab payload."""
+
     return _payload("meshing-reality-check")
 
 
 @api_bp.get("/api/v2/quadratic-surd")
 def quadratic_surd_api():
+    """Return the quadratic-surd lab payload."""
+
     return _payload("quadratic-surd-loop")
