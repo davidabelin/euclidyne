@@ -12,10 +12,11 @@ body {
   display: flex;
   flex-direction: column;
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  font-size: 0.86rem;
   color: var(--ink);
   background:
-    radial-gradient(circle at 18% 12%, rgba(248, 219, 169, 0.92), transparent 30%),
-    radial-gradient(circle at 82% 18%, rgba(205, 236, 230, 0.94), transparent 28%),
+    radial-gradient(circle at 18% 12%, rgba(248, 219, 169, 0.68), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(205, 236, 230, 0.72), transparent 26%),
     linear-gradient(160deg, var(--paper), var(--paper-deep));
 }
 
@@ -26,24 +27,24 @@ a {
 .bg-orb {
   position: fixed;
   border-radius: 999px;
-  filter: blur(58px);
-  opacity: 0.24;
+  filter: blur(42px);
+  opacity: 0.18;
   z-index: -1;
 }
 
 .bg-orb-a {
-  width: 260px;
-  height: 260px;
+  width: 195px;
+  height: 195px;
   background: #d39f4a;
-  top: -90px;
+  top: -72px;
   right: 7vw;
 }
 
 .bg-orb-b {
-  width: 280px;
-  height: 280px;
+  width: 210px;
+  height: 210px;
   background: #2aa087;
-  bottom: -120px;
+  bottom: -95px;
   left: 6vw;
 }
 
@@ -51,18 +52,18 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem clamp(0.95rem, 3vw, 2.2rem);
+  gap: 0.62rem;
+  padding: 0.66rem clamp(0.7rem, 2vw, 1.45rem);
 }
 
 .brand-wrap {
   display: grid;
-  gap: 0.2rem;
+  gap: 0.12rem;
 }
 
 .brand {
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 0.03em;
 }
@@ -70,20 +71,20 @@ a {
 .brand-subtitle {
   margin: 0;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.76rem;
 }
 
 .site-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.48rem;
+  gap: 0.34rem;
 }
 
 .site-nav a {
-  padding: 0.35rem 0.62rem;
+  padding: 0.22rem 0.44rem;
   border-radius: 999px;
   text-decoration: none;
-  font-size: 0.92rem;
+  font-size: 0.8rem;
 }
 
 .site-nav a:hover,
@@ -92,28 +93,28 @@ a {
 }
 
 .page {
-  width: min(1180px, 94vw);
-  margin: 0 auto 2rem;
+  width: min(980px, 94vw);
+  margin: 0 auto 1.35rem;
   display: grid;
-  gap: 0.95rem;
+  gap: 0.66rem;
   flex: 1 0 auto;
 }
 
 .site-footer {
-  padding: 0 0 1.15rem;
+  padding: 0 0 0.9rem;
 }
 
 .footer-inner {
-  width: min(1180px, 94vw);
+  width: min(980px, 94vw);
   margin: 0 auto;
-  padding: 0.82rem 0.95rem;
+  padding: 0.56rem 0.72rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.52rem;
   flex-wrap: wrap;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 10px;
   background: var(--panel);
   box-shadow: var(--shadow);
 }
@@ -121,10 +122,10 @@ a {
 .footer-copy {
   margin: 0;
   color: var(--muted);
-  font-size: 0.84rem;
+  font-size: 0.76rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.34rem;
 }
 
 .copyleft-mark {
@@ -134,16 +135,16 @@ a {
 .footer-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
+  gap: 0.34rem;
 }
 
 .footer-links a {
   text-decoration: none;
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 0.24rem 0.56rem;
+  padding: 0.18rem 0.42rem;
   background: rgba(255, 255, 255, 0.84);
-  font-size: 0.88rem;
+  font-size: 0.76rem;
 }
 
 @media (max-width: 860px) {

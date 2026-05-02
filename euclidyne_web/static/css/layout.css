@@ -1,20 +1,20 @@
 .lab-layout {
   display: grid;
-  gap: 0.95rem;
-  grid-template-columns: minmax(0, 2.2fr) minmax(280px, 0.95fr);
+  gap: 0.66rem;
+  grid-template-columns: minmax(0, 2.2fr) minmax(230px, 0.95fr);
   align-items: start;
 }
 
 .main-column {
   display: grid;
-  gap: 0.95rem;
+  gap: 0.66rem;
 }
 
 .lab-aside {
   display: grid;
-  gap: 0.95rem;
+  gap: 0.66rem;
   position: sticky;
-  top: 1rem;
+  top: 0.72rem;
 }
 
 @media (max-width: 980px) {
